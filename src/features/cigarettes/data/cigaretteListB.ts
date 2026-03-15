@@ -1,0 +1,106 @@
+import type { CigaretteItem } from "./cigaretteListA";
+
+export const cigaretteListB: CigaretteItem[] = [
+  { code: "11225", name: "DU MAURIER SIGNATURE KS", group: "DU MAURIER" },
+  { code: "11308", name: "DU MAURIER SIGNATURE RG", group: "DU MAURIER" },
+  { code: "11282", name: "DU MAURIER DISTINCT PLUS KS", group: "DU MAURIER" },
+  { code: "11258", name: "DU MAURIER DISTINCT RG", group: "DU MAURIER" },
+  { code: "11264", name: "DU MAURIER SMOOTH KS", group: "DU MAURIER" },
+  { code: "11298", name: "DU MAURIER SMOOTH RG", group: "DU MAURIER" },
+  { code: "11274", name: "DU MAURIER MELLOW KS", group: "DU MAURIER" },
+  { code: "11279", name: "DU MAURIER MELLOW RG", group: "DU MAURIER" },
+
+  { code: "11217", name: "MARLBORO FULL KS", group: "MARLBORO" },
+  { code: "11266", name: "MARLBORO KS", group: "MARLBORO" },
+  { code: "11317", name: "MARLBORO ORIGINAL KS", group: "MARLBORO" },
+  { code: "18798", name: "MARLBORO PLUS KS", group: "MARLBORO" },
+  { code: "11181", name: "MARLBORO SELECT KS", group: "MARLBORO" },
+  { code: "11239", name: "MARLBORO SMOOTH KS", group: "MARLBORO" },
+
+  { code: "11281", name: "JOHN PLAYER BOLD KS", group: "JOHN PLAYER" },
+  { code: "11269", name: "JOHN PLAYER BOLD RG", group: "JOHN PLAYER" },
+  { code: "11204", name: "JOHN PLAYER RICH KS", group: "JOHN PLAYER" },
+  { code: "11168", name: "JOHN PLAYER RICH RG", group: "JOHN PLAYER" },
+  { code: "11178", name: "JOHN PLAYER SMOOTH", group: "JOHN PLAYER" },
+  { code: "11305", name: "JOHN PLAYER SMOOTH", group: "JOHN PLAYER" },
+  { code: "11280", name: "JOHN PLAYER MELLOW", group: "JOHN PLAYER" },
+  { code: "11312", name: "JOHN PLAYER MELLOW", group: "JOHN PLAYER" },
+
+  { code: "11172", name: "PALL MALL BOLD EXTRA KS", group: "PALL MALL" },
+  { code: "11324", name: "PALL MALL BOLD KS", group: "PALL MALL" },
+  { code: "11309", name: "PALL MALL BOLD RG", group: "PALL MALL" },
+  { code: "11195", name: "PALL MALL FULL KS", group: "PALL MALL" },
+  { code: "11293", name: "PALL MALL FULL RG", group: "PALL MALL" },
+  { code: "11230", name: "PALL MALL SMOOTH EXTRA", group: "PALL MALL" },
+  { code: "11180", name: "PALL MALL SMOOTH KS", group: "PALL MALL" },
+  { code: "11177", name: "PALL MALL SMOOTH RG", group: "PALL MALL" },
+
+  { code: "11315", name: "PLAYERS ORIGINAL KS", group: "PLAYERS" },
+  { code: "11249", name: "PLAYERS ORIGINAL RG", group: "PLAYERS" },
+  { code: "11304", name: "PLAYERS KS", group: "PLAYERS" },
+  { code: "11242", name: "PLAYERS RG", group: "PLAYERS" },
+  { code: "11320", name: "PLAYERS SMOOTH KS", group: "PLAYERS" },
+  { code: "11289", name: "PLAYERS SMOOTH RG", group: "PLAYERS" },
+
+  { code: "11260", name: "VICEROY FULL KS", group: "VICEROY" },
+  { code: "11182", name: "VICEROY SMOOTH KS", group: "VICEROY" },
+
+  { code: "11189", name: "MATINEE MELLOW KS", group: "MATINEE" },
+  { code: "11302", name: "MATINEE SUBTLE KS", group: "MATINEE" },
+
+  { code: "11184", name: "VOGUE KS", group: "VOGUE" },
+
+  { code: "11648", name: "CTC DARTS KS", group: "CTC" },
+  { code: "11649", name: "CTC DARTS SMOOTH KS", group: "CTC" },
+  { code: "11650", name: "CTC PLATINUM FULL KS", group: "CTC" },
+  { code: "11651", name: "CTC PLATINUM SMOOTH KS", group: "CTC" },
+  { code: "11652", name: "CTC RALLY KS", group: "CTC" },
+  { code: "11653", name: "CTC RALLY SMOOTH KS", group: "CTC" },
+
+  { code: "21414", name: "CAMEL FULL KS", group: "CAMEL" },
+  { code: "11755", name: "CAMEL ORIGINAL KS", group: "CAMEL" },
+  { code: "16663", name: "CAMEL SELECT KS", group: "CAMEL" },
+  { code: "11785", name: "CAMEL SMOOTH KS", group: "CAMEL" },
+
+  { code: "11812", name: "MACDONALD ORIGINAL KS", group: "MACDONALD" },
+  { code: "11803", name: "MACDONALD ORIGINAL RG", group: "MACDONALD" },
+  { code: "11806", name: "MACDONALD RICH KS", group: "MACDONALD" },
+  { code: "11799", name: "MACDONALD SMOOTH KS", group: "MACDONALD" },
+
+  { code: "11769", name: "AMERICAN SPIRIT BOLD KS", group: "AMERICAN SPIRIT" },
+  { code: "11760", name: "AMERICAN SPIRIT KS", group: "AMERICAN SPIRIT" },
+
+  { code: "23592", name: "NORDIC SPIRIT LUMA 6MG", group: "NORDIC SPIRIT" },
+  { code: "23593", name: "NORDIC SPIRIT LUMA PLUS 9MG", group: "NORDIC SPIRIT" },
+  { code: "23595", name: "NORDIC SPIRIT NOVA 6MG", group: "NORDIC SPIRIT" },
+  { code: "23594", name: "NORDIC SPIRIT NOVA PLUS 9MG", group: "NORDIC SPIRIT" },
+
+  { code: "11759", name: "EXPORT A FULL KS", group: "EXPORT A" },
+  { code: "11749", name: "EXPORT A FULL RG", group: "EXPORT A" },
+  { code: "11752", name: "EXPORT A MEDIUM KS", group: "EXPORT A" },
+  { code: "11754", name: "EXPORT A MEDIUM RG", group: "EXPORT A" },
+  { code: "11780", name: "EXPORT A SMOOTH KS", group: "EXPORT A" },
+  { code: "11782", name: "EXPORT A SMOOTH RG", group: "EXPORT A" },
+  { code: "11768", name: "EXPORT A EXTRA KS", group: "EXPORT A" },
+  { code: "11765", name: "EXPORT A EXTRA RG", group: "EXPORT A" },
+  { code: "11767", name: "EXPORT A FINE KS", group: "EXPORT A" },
+  { code: "11757", name: "EXPORT A FINE RG", group: "EXPORT A" },
+  { code: "16169", name: "EXPORT A PLUS KS", group: "EXPORT A" },
+
+  { code: "19330", name: "LD PLUS KS", group: "LD" },
+  { code: "11792", name: "LD BOLD KS", group: "LD" },
+  { code: "11830", name: "LD MEDIUM KS", group: "LD" },
+  { code: "11821", name: "LD MEDIUM MAX KS", group: "LD" },
+  { code: "11824", name: "LD SMOOTH KS", group: "LD" },
+  { code: "11826", name: "LD STANDARD BOLD KS", group: "LD" },
+  { code: "11819", name: "LD STANDARD MEDIUM KS", group: "LD" },
+
+  { code: "11508", name: "NUMBER SEVEN ORIGINAL KING", group: "NUMBER SEVEN" },
+  { code: "11509", name: "NUMBER SEVEN ORIGINAL RG", group: "NUMBER SEVEN" },
+  { code: "11533", name: "NUMBER SEVEN SPECIAL KING", group: "NUMBER SEVEN" },
+  { code: "11534", name: "NUMBER SEVEN SPECIAL RG", group: "NUMBER SEVEN" },
+  { code: "11533", name: "NUMBER SEVEN SPECIAL K 25", group: "NUMBER SEVEN" },
+
+  { code: "11547", name: "PHILIP MORRIS ORIGINAL KING", group: "PHILIP MORRIS" },
+  { code: "11550", name: "PHILIP MORRIS SPECIAL KING", group: "PHILIP MORRIS" },
+];
