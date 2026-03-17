@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useDailyStore } from "../../../store/daily/daily.store";
 import {
   computeFuelDifferences,
@@ -18,7 +18,27 @@ interface Props {
   onStatusChange?: (status: Status) => void;
 }
 
-
+type FieldKey =
+  | "openingReg"
+  | "openingSup93"
+  | "openingDsl"
+  | "deliveryReg"
+  | "deliverySup93"
+  | "deliveryDsl"
+  | "salesRegMorning"
+  | "salesEx89Morning"
+  | "salesSup91Morning"
+  | "salesSup93Morning"
+  | "salesDslMorning"
+  | "salesRegEvening"
+  | "salesEx89Evening"
+  | "salesSup91Evening"
+  | "salesSup93Evening"
+  | "salesDslEvening"
+  | "closingDipRegT1"
+  | "closingDipRegT2"
+  | "closingDipSup"
+  | "closingDipDsl";
 
 const formatDisplayNumber = (value: number | null | undefined) => {
   if (value === null || value === undefined || !Number.isFinite(value)) return "—";
@@ -172,6 +192,8 @@ type FuelInputRowProps = {
   onRawChange: (raw: string) => void;
   themeStyle: React.CSSProperties;
   placeholder?: string;
+  inputRef?: (node: HTMLInputElement | null) => void;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 };
 
 const FuelInputRow = ({
@@ -180,18 +202,22 @@ const FuelInputRow = ({
   onRawChange,
   themeStyle,
   placeholder = "Enter",
+  inputRef,
+  onKeyDown,
 }: FuelInputRowProps) => {
   return (
     <div className="d-flex align-items-center gap-3 mb-3">
       <div style={{ ...labelPillBase, ...themeStyle }}>{label}</div>
 
       <input
+        ref={inputRef}
         className="form-control"
         value={formatInputNumber(rawValue)}
         onChange={(e) => {
           const raw = normalizeRawInput(e.target.value);
           onRawChange(raw);
         }}
+        onKeyDown={onKeyDown}
         placeholder={placeholder}
         inputMode="decimal"
         style={{ height: 46, borderRadius: 10 }}
@@ -208,6 +234,10 @@ type SalesRowProps = {
   onMorningChange: (raw: string) => void;
   onEveningChange: (raw: string) => void;
   total: number;
+  morningInputRef?: (node: HTMLInputElement | null) => void;
+  eveningInputRef?: (node: HTMLInputElement | null) => void;
+  onMorningKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  onEveningKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 };
 
 const SalesRow = ({
@@ -218,6 +248,10 @@ const SalesRow = ({
   onMorningChange,
   onEveningChange,
   total,
+  morningInputRef,
+  eveningInputRef,
+  onMorningKeyDown,
+  onEveningKeyDown,
 }: SalesRowProps) => {
   return (
     <div
@@ -229,18 +263,22 @@ const SalesRow = ({
       <div style={{ ...labelPillBase, ...themeStyle }}>{label}</div>
 
       <input
+        ref={morningInputRef}
         className="form-control"
         value={formatInputNumber(morningRaw)}
         onChange={(e) => onMorningChange(normalizeRawInput(e.target.value))}
+        onKeyDown={onMorningKeyDown}
         inputMode="decimal"
         placeholder="Morning"
         style={{ height: 46, borderRadius: 10 }}
       />
 
       <input
+        ref={eveningInputRef}
         className="form-control"
         value={formatInputNumber(eveningRaw)}
         onChange={(e) => onEveningChange(normalizeRawInput(e.target.value))}
+        onKeyDown={onEveningKeyDown}
         inputMode="decimal"
         placeholder="Evening"
         style={{ height: 46, borderRadius: 10 }}
@@ -270,6 +308,8 @@ type DipCardProps = {
   onChange: (raw: string) => void;
   difference?: number;
   showDifference?: boolean;
+  inputRef?: (node: HTMLInputElement | null) => void;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 };
 
 const DipCard = ({
@@ -281,6 +321,8 @@ const DipCard = ({
   onChange,
   difference,
   showDifference = false,
+  inputRef,
+  onKeyDown,
 }: DipCardProps) => {
   return (
     <div className="col-12 col-md-6 col-xl-3">
@@ -300,9 +342,11 @@ const DipCard = ({
 
         <label className="form-label fw-semibold mb-2">Dip</label>
         <input
+          ref={inputRef}
           className="form-control mb-3"
           value={formatInputNumber(rawValue)}
           onChange={(e) => onChange(normalizeRawInput(e.target.value))}
+          onKeyDown={onKeyDown}
           inputMode="decimal"
           placeholder="Enter dip"
           style={{ height: 48, borderRadius: 10 }}
@@ -477,6 +521,76 @@ const FuelPage = ({ date, onStatusChange }: Props) => {
     setFuelClosingDipDslInput(entry.fuelClosingDipDsl?.toString() ?? "");
   }, [entry]);
 
+  const inputRefs = useRef<Record<FieldKey, HTMLInputElement | null>>({
+    openingReg: null,
+    openingSup93: null,
+    openingDsl: null,
+    deliveryReg: null,
+    deliverySup93: null,
+    deliveryDsl: null,
+    salesRegMorning: null,
+    salesEx89Morning: null,
+    salesSup91Morning: null,
+    salesSup93Morning: null,
+    salesDslMorning: null,
+    salesRegEvening: null,
+    salesEx89Evening: null,
+    salesSup91Evening: null,
+    salesSup93Evening: null,
+    salesDslEvening: null,
+    closingDipRegT1: null,
+    closingDipRegT2: null,
+    closingDipSup: null,
+    closingDipDsl: null,
+  });
+
+  const nextFieldMap: Partial<Record<FieldKey, FieldKey>> = {
+    openingReg: "openingSup93",
+    openingSup93: "openingDsl",
+    openingDsl: "salesRegMorning",
+
+    deliveryReg: "deliverySup93",
+    deliverySup93: "deliveryDsl",
+    deliveryDsl: "salesRegMorning",
+
+    salesRegMorning: "salesEx89Morning",
+    salesEx89Morning: "salesSup91Morning",
+    salesSup91Morning: "salesSup93Morning",
+    salesSup93Morning: "salesDslMorning",
+
+    salesDslMorning: "salesRegEvening",
+
+    salesRegEvening: "salesEx89Evening",
+    salesEx89Evening: "salesSup91Evening",
+    salesSup91Evening: "salesSup93Evening",
+    salesSup93Evening: "salesDslEvening",
+
+    salesDslEvening: "closingDipRegT1",
+
+    closingDipRegT1: "closingDipRegT2",
+    closingDipRegT2: "closingDipSup",
+    closingDipSup: "closingDipDsl",
+  };
+
+  const focusNext = (key: FieldKey) => {
+    const nextKey = nextFieldMap[key];
+    if (!nextKey) return;
+
+    const nextRef = inputRefs.current[nextKey];
+    if (nextRef) {
+      nextRef.focus();
+      nextRef.select?.();
+    }
+  };
+
+  const handleEnter =
+    (key: FieldKey) => (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        focusNext(key);
+      }
+    };
+
   return (
     <div className="card border-0" style={cardShellStyle}>
       <div className="card-header bg-white border-0 d-flex justify-content-between align-items-start align-items-md-center flex-column flex-md-row gap-2 pt-4 px-4">
@@ -511,6 +625,10 @@ const FuelPage = ({ date, onStatusChange }: Props) => {
                   setFuelOpeningRegTotal(date, toNumberOrNull(raw));
                 }}
                 themeStyle={fuelTheme.regular.badgeStyle}
+                inputRef={(node) => {
+                  inputRefs.current.openingReg = node;
+                }}
+                onKeyDown={handleEnter("openingReg")}
               />
 
               <FuelInputRow
@@ -521,6 +639,10 @@ const FuelPage = ({ date, onStatusChange }: Props) => {
                   setFuelOpeningSup93(date, toNumberOrNull(raw));
                 }}
                 themeStyle={fuelTheme.sup93.badgeStyle}
+                inputRef={(node) => {
+                  inputRefs.current.openingSup93 = node;
+                }}
+                onKeyDown={handleEnter("openingSup93")}
               />
 
               <FuelInputRow
@@ -531,6 +653,10 @@ const FuelPage = ({ date, onStatusChange }: Props) => {
                   setFuelOpeningDsl(date, toNumberOrNull(raw));
                 }}
                 themeStyle={fuelTheme.diesel.badgeStyle}
+                inputRef={(node) => {
+                  inputRefs.current.openingDsl = node;
+                }}
+                onKeyDown={handleEnter("openingDsl")}
               />
             </div>
           </div>
@@ -549,6 +675,10 @@ const FuelPage = ({ date, onStatusChange }: Props) => {
                   setFuelDeliveryRegTotal(date, toNumberOrNull(raw));
                 }}
                 themeStyle={fuelTheme.regular.badgeStyle}
+                inputRef={(node) => {
+                  inputRefs.current.deliveryReg = node;
+                }}
+                onKeyDown={handleEnter("deliveryReg")}
               />
 
               <FuelInputRow
@@ -559,6 +689,10 @@ const FuelPage = ({ date, onStatusChange }: Props) => {
                   setFuelDeliverySup93(date, toNumberOrNull(raw));
                 }}
                 themeStyle={fuelTheme.sup93.badgeStyle}
+                inputRef={(node) => {
+                  inputRefs.current.deliverySup93 = node;
+                }}
+                onKeyDown={handleEnter("deliverySup93")}
               />
 
               <FuelInputRow
@@ -569,6 +703,10 @@ const FuelPage = ({ date, onStatusChange }: Props) => {
                   setFuelDeliveryDsl(date, toNumberOrNull(raw));
                 }}
                 themeStyle={fuelTheme.diesel.badgeStyle}
+                inputRef={(node) => {
+                  inputRefs.current.deliveryDsl = node;
+                }}
+                onKeyDown={handleEnter("deliveryDsl")}
               />
             </div>
           </div>
@@ -641,7 +779,6 @@ const FuelPage = ({ date, onStatusChange }: Props) => {
         <div className="p-3 p-lg-4 mb-4 bg-white" style={cardShellStyle}>
           <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
             <div style={sectionTitleStyle}>Sales</div>
-
           </div>
 
           <div
@@ -671,6 +808,14 @@ const FuelPage = ({ date, onStatusChange }: Props) => {
               setFuelSalesReg87Evening(date, toNumberOrNull(raw));
             }}
             total={salesTotals.reg87}
+            morningInputRef={(node) => {
+              inputRefs.current.salesRegMorning = node;
+            }}
+            eveningInputRef={(node) => {
+              inputRefs.current.salesRegEvening = node;
+            }}
+            onMorningKeyDown={handleEnter("salesRegMorning")}
+            onEveningKeyDown={handleEnter("salesRegEvening")}
           />
 
           <SalesRow
@@ -687,6 +832,14 @@ const FuelPage = ({ date, onStatusChange }: Props) => {
               setFuelSalesEx89Evening(date, toNumberOrNull(raw));
             }}
             total={salesTotals.ex89}
+            morningInputRef={(node) => {
+              inputRefs.current.salesEx89Morning = node;
+            }}
+            eveningInputRef={(node) => {
+              inputRefs.current.salesEx89Evening = node;
+            }}
+            onMorningKeyDown={handleEnter("salesEx89Morning")}
+            onEveningKeyDown={handleEnter("salesEx89Evening")}
           />
 
           <SalesRow
@@ -703,6 +856,14 @@ const FuelPage = ({ date, onStatusChange }: Props) => {
               setFuelSalesSup91Evening(date, toNumberOrNull(raw));
             }}
             total={salesTotals.sup91}
+            morningInputRef={(node) => {
+              inputRefs.current.salesSup91Morning = node;
+            }}
+            eveningInputRef={(node) => {
+              inputRefs.current.salesSup91Evening = node;
+            }}
+            onMorningKeyDown={handleEnter("salesSup91Morning")}
+            onEveningKeyDown={handleEnter("salesSup91Evening")}
           />
 
           <SalesRow
@@ -719,6 +880,14 @@ const FuelPage = ({ date, onStatusChange }: Props) => {
               setFuelSalesSup93Evening(date, toNumberOrNull(raw));
             }}
             total={salesTotals.sup93}
+            morningInputRef={(node) => {
+              inputRefs.current.salesSup93Morning = node;
+            }}
+            eveningInputRef={(node) => {
+              inputRefs.current.salesSup93Evening = node;
+            }}
+            onMorningKeyDown={handleEnter("salesSup93Morning")}
+            onEveningKeyDown={handleEnter("salesSup93Evening")}
           />
 
           <SalesRow
@@ -735,6 +904,14 @@ const FuelPage = ({ date, onStatusChange }: Props) => {
               setFuelSalesDslEvening(date, toNumberOrNull(raw));
             }}
             total={salesTotals.dsl}
+            morningInputRef={(node) => {
+              inputRefs.current.salesDslMorning = node;
+            }}
+            eveningInputRef={(node) => {
+              inputRefs.current.salesDslEvening = node;
+            }}
+            onMorningKeyDown={handleEnter("salesDslMorning")}
+            onEveningKeyDown={handleEnter("salesDslEvening")}
           />
         </div>
 
@@ -754,6 +931,10 @@ const FuelPage = ({ date, onStatusChange }: Props) => {
                 setFuelClosingDipRegT1Input(raw);
                 setFuelClosingDipRegT1(date, toNumberOrNull(raw));
               }}
+              inputRef={(node) => {
+                inputRefs.current.closingDipRegT1 = node;
+              }}
+              onKeyDown={handleEnter("closingDipRegT1")}
             />
 
             <DipCard
@@ -768,6 +949,10 @@ const FuelPage = ({ date, onStatusChange }: Props) => {
               }}
               difference={diffs.diffReg}
               showDifference
+              inputRef={(node) => {
+                inputRefs.current.closingDipRegT2 = node;
+              }}
+              onKeyDown={handleEnter("closingDipRegT2")}
             />
 
             <DipCard
@@ -782,6 +967,10 @@ const FuelPage = ({ date, onStatusChange }: Props) => {
               }}
               difference={diffs.diffSup}
               showDifference
+              inputRef={(node) => {
+                inputRefs.current.closingDipSup = node;
+              }}
+              onKeyDown={handleEnter("closingDipSup")}
             />
 
             <DipCard
@@ -796,6 +985,10 @@ const FuelPage = ({ date, onStatusChange }: Props) => {
               }}
               difference={diffs.diffDsl}
               showDifference
+              inputRef={(node) => {
+                inputRefs.current.closingDipDsl = node;
+              }}
+              onKeyDown={handleEnter("closingDipDsl")}
             />
           </div>
         </div>
@@ -908,6 +1101,3 @@ const FuelPage = ({ date, onStatusChange }: Props) => {
 };
 
 export default FuelPage;
-
-
-

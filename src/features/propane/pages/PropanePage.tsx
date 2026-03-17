@@ -1,10 +1,27 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useDailyStore } from "../../../store/daily/daily.store";
 import { computePropaneCheck, computePropaneStatus } from "../selectors/propane.selectors";
 
 type Props = {
   date: string;
 };
+
+type FieldKey =
+  | "fillOpening"
+  | "fillDelivery"
+  | "fillClosing"
+  | "totalOpening"
+  | "totalDelivery"
+  | "totalClosing";
+
+const inputOrder: FieldKey[] = [
+  "fillOpening",
+  "fillDelivery",
+  "fillClosing",
+  "totalOpening",
+  "totalDelivery",
+  "totalClosing",
+];
 
 const prevDateStr = (date: string) => {
   const d = new Date(date + "T00:00:00");
@@ -89,6 +106,37 @@ const PropanePage = ({ date }: Props) => {
   useEffect(() => {
     setTotalClosingStr(entry.totalClosing === null ? "" : String(entry.totalClosing));
   }, [date, entry.totalClosing]);
+
+  const inputRefs = useRef<Record<FieldKey, HTMLInputElement | null>>({
+    fillOpening: null,
+    fillDelivery: null,
+    fillClosing: null,
+    totalOpening: null,
+    totalDelivery: null,
+    totalClosing: null,
+  });
+
+  const focusNext = (key: FieldKey) => {
+    const currentIndex = inputOrder.indexOf(key);
+    if (currentIndex === -1) return;
+
+    const nextKey = inputOrder[currentIndex + 1];
+    if (!nextKey) return;
+
+    const nextRef = inputRefs.current[nextKey];
+    if (nextRef) {
+      nextRef.focus();
+      nextRef.select?.();
+    }
+  };
+
+  const handleEnter =
+    (key: FieldKey) => (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        focusNext(key);
+      }
+    };
 
   const handleFillOpeningChange = (raw: string) => {
     if (!isDigitsOnly(raw)) return;
@@ -200,36 +248,48 @@ const PropanePage = ({ date }: Props) => {
 
                 <td>
                   <input
+                    ref={(node) => {
+                      inputRefs.current.fillOpening = node;
+                    }}
                     className="form-control"
                     type="text"
                     inputMode="numeric"
                     value={fillOpeningStr}
                     onChange={(e) => handleFillOpeningChange(e.target.value)}
                     onBlur={() => setFillOpeningStr(normalizeIntString(fillOpeningStr))}
+                    onKeyDown={handleEnter("fillOpening")}
                     placeholder="required"
                   />
                 </td>
 
                 <td>
                   <input
+                    ref={(node) => {
+                      inputRefs.current.fillDelivery = node;
+                    }}
                     className="form-control"
                     type="text"
                     inputMode="numeric"
                     value={fillDeliveryStr}
                     onChange={(e) => handleFillDeliveryChange(e.target.value)}
                     onBlur={() => setFillDeliveryStr(normalizeIntString(fillDeliveryStr))}
+                    onKeyDown={handleEnter("fillDelivery")}
                     placeholder="optional"
                   />
                 </td>
 
                 <td>
                   <input
+                    ref={(node) => {
+                      inputRefs.current.fillClosing = node;
+                    }}
                     className="form-control"
                     type="text"
                     inputMode="numeric"
                     value={fillClosingStr}
                     onChange={(e) => handleFillClosingChange(e.target.value)}
                     onBlur={() => setFillClosingStr(normalizeIntString(fillClosingStr))}
+                    onKeyDown={handleEnter("fillClosing")}
                     placeholder="required"
                   />
                 </td>
@@ -254,36 +314,48 @@ const PropanePage = ({ date }: Props) => {
 
                 <td>
                   <input
+                    ref={(node) => {
+                      inputRefs.current.totalOpening = node;
+                    }}
                     className="form-control"
                     type="text"
                     inputMode="numeric"
                     value={totalOpeningStr}
                     onChange={(e) => handleTotalOpeningChange(e.target.value)}
                     onBlur={() => setTotalOpeningStr(normalizeIntString(totalOpeningStr))}
+                    onKeyDown={handleEnter("totalOpening")}
                     placeholder="required"
                   />
                 </td>
 
                 <td>
                   <input
+                    ref={(node) => {
+                      inputRefs.current.totalDelivery = node;
+                    }}
                     className="form-control"
                     type="text"
                     inputMode="numeric"
                     value={totalDeliveryStr}
                     onChange={(e) => handleTotalDeliveryChange(e.target.value)}
                     onBlur={() => setTotalDeliveryStr(normalizeIntString(totalDeliveryStr))}
+                    onKeyDown={handleEnter("totalDelivery")}
                     placeholder="optional"
                   />
                 </td>
 
                 <td>
                   <input
+                    ref={(node) => {
+                      inputRefs.current.totalClosing = node;
+                    }}
                     className="form-control"
                     type="text"
                     inputMode="numeric"
                     value={totalClosingStr}
                     onChange={(e) => handleTotalClosingChange(e.target.value)}
                     onBlur={() => setTotalClosingStr(normalizeIntString(totalClosingStr))}
+                    onKeyDown={handleEnter("totalClosing")}
                     placeholder="required"
                   />
                 </td>

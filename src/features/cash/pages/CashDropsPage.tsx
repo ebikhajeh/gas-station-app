@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { makeEmptyDailyEntry } from "../../../domain/daily/daily.model";
 import { useDailyStore } from "../../../store/daily/daily.store";
 import { CASHIER_LIST } from "../constants/cashierList";
@@ -29,7 +29,107 @@ interface Props {
   onStatusChange?: (status: Status) => void;
 }
 
+type FieldKey =
+  | "morningOther"
+  | "morningEndingTray"
+  | "morningCanadianCash"
+  | "morningDrop1_5"
+  | "morningDrop1_10"
+  | "morningDrop1_20"
+  | "morningDrop1_50"
+  | "morningDrop1_100"
+  | "morningDrop2_5"
+  | "morningDrop2_10"
+  | "morningDrop2_20"
+  | "morningDrop2_50"
+  | "morningDrop2_100"
+  | "morningCoins1"
+  | "morningCoins2"
+  | "morningCoins3"
+  | "morningUsDrop"
+  | "eveningOther"
+  | "eveningEndingTray"
+  | "eveningCanadianCash"
+  | "eveningDrop1_5"
+  | "eveningDrop1_10"
+  | "eveningDrop1_20"
+  | "eveningDrop1_50"
+  | "eveningDrop1_100"
+  | "eveningDrop2_5"
+  | "eveningDrop2_10"
+  | "eveningDrop2_20"
+  | "eveningDrop2_50"
+  | "eveningDrop2_100"
+  | "eveningCoins1"
+  | "eveningCoins2"
+  | "eveningCoins3"
+  | "eveningUsDrop"
+  | "comment1"
+  | "comment2"
+  | "comment3";
+
+const inputOrder: FieldKey[] = [
+  "morningOther",
+  "morningEndingTray",
+  "morningCanadianCash",
+  "morningDrop1_5",
+  "morningDrop1_10",
+  "morningDrop1_20",
+  "morningDrop1_50",
+  "morningDrop1_100",
+  "morningDrop2_5",
+  "morningDrop2_10",
+  "morningDrop2_20",
+  "morningDrop2_50",
+  "morningDrop2_100",
+  "morningCoins1",
+  "morningCoins2",
+  "morningCoins3",
+  "morningUsDrop",
+  "eveningOther",
+  "eveningEndingTray",
+  "eveningCanadianCash",
+  "eveningDrop1_5",
+  "eveningDrop1_10",
+  "eveningDrop1_20",
+  "eveningDrop1_50",
+  "eveningDrop1_100",
+  "eveningDrop2_5",
+  "eveningDrop2_10",
+  "eveningDrop2_20",
+  "eveningDrop2_50",
+  "eveningDrop2_100",
+  "eveningCoins1",
+  "eveningCoins2",
+  "eveningCoins3",
+  "eveningUsDrop",
+  "comment1",
+  "comment2",
+  "comment3",
+];
+
 const BILL_DENOMS = [5, 10, 20, 50, 100] as const;
+
+type BillDenom = (typeof BILL_DENOMS)[number];
+
+type FocusableElement = HTMLInputElement | HTMLTextAreaElement;
+
+type InputBinding = {
+  inputRef: (node: HTMLInputElement | null) => void;
+  onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+};
+
+type ShiftInputBindings = {
+  other: InputBinding;
+  endingTray: InputBinding;
+  canadianCash: InputBinding;
+  drop1: Record<BillDenom, InputBinding>;
+  drop2: Record<BillDenom, InputBinding>;
+  coin1: InputBinding;
+  coin2: InputBinding;
+  coin3: InputBinding;
+  usDrop: InputBinding;
+};
 
 const formatDisplayNumber = (value: number | null | undefined) => {
   if (value === null || value === undefined || !Number.isFinite(value)) return "—";
@@ -156,6 +256,8 @@ type NumberInputProps = {
   placeholder?: string;
   decimal?: boolean;
   disabled?: boolean;
+  inputRef?: (node: HTMLInputElement | null) => void;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 };
 
 const NumberInput = ({
@@ -165,14 +267,18 @@ const NumberInput = ({
   placeholder,
   decimal = true,
   disabled = false,
+  inputRef,
+  onKeyDown,
 }: NumberInputProps) => {
   return (
     <div>
       {label ? <label className="form-label fw-semibold mb-2">{label}</label> : null}
       <input
+        ref={inputRef}
         className="form-control"
         value={decimal ? formatDecimalInput(value) : formatIntegerInput(value)}
         onChange={(e) => onRawChange(normalizeRawInput(e.target.value))}
+        onKeyDown={onKeyDown}
         placeholder={placeholder}
         inputMode="decimal"
         disabled={disabled}
@@ -195,12 +301,12 @@ type ShiftSectionProps = {
   canadianCashInput: string;
   onCanadianCashChange: (raw: string) => void;
 
-  drop1Values: Record<5 | 10 | 20 | 50 | 100, string>;
-  onDrop1Change: (denom: 5 | 10 | 20 | 50 | 100, raw: string) => void;
+  drop1Values: Record<BillDenom, string>;
+  onDrop1Change: (denom: BillDenom, raw: string) => void;
   drop1Total: number;
 
-  drop2Values: Record<5 | 10 | 20 | 50 | 100, string>;
-  onDrop2Change: (denom: 5 | 10 | 20 | 50 | 100, raw: string) => void;
+  drop2Values: Record<BillDenom, string>;
+  onDrop2Change: (denom: BillDenom, raw: string) => void;
   drop2Total: number;
 
   coinValues: {
@@ -220,6 +326,7 @@ type ShiftSectionProps = {
   safeDropCoins: number;
   balance: number;
   overShort: number;
+  inputBindings: ShiftInputBindings;
 };
 
 const ShiftSection = ({
@@ -251,6 +358,7 @@ const ShiftSection = ({
   safeDropCoins,
   balance,
   overShort,
+  inputBindings,
 }: ShiftSectionProps) => {
   return (
     <div className="p-3 p-lg-4" style={sectionStyle}>
@@ -295,6 +403,8 @@ const ShiftSection = ({
                 onRawChange={onOtherChange}
                 placeholder="Optional"
                 decimal
+                inputRef={inputBindings.other.inputRef}
+                onKeyDown={inputBindings.other.onKeyDown}
               />
             </div>
 
@@ -305,6 +415,8 @@ const ShiftSection = ({
                 onRawChange={onEndingTrayChange}
                 placeholder="Required"
                 decimal
+                inputRef={inputBindings.endingTray.inputRef}
+                onKeyDown={inputBindings.endingTray.onKeyDown}
               />
             </div>
 
@@ -315,6 +427,8 @@ const ShiftSection = ({
                 onRawChange={onCanadianCashChange}
                 placeholder="Required"
                 decimal
+                inputRef={inputBindings.canadianCash.inputRef}
+                onKeyDown={inputBindings.canadianCash.onKeyDown}
               />
             </div>
           </div>
@@ -338,11 +452,13 @@ const ShiftSection = ({
                     {BILL_DENOMS.map((denom) => (
                       <td key={`drop1-${denom}`}>
                         <input
+                          ref={inputBindings.drop1[denom].inputRef}
                           className="form-control"
                           value={formatIntegerInput(drop1Values[denom])}
                           onChange={(e) =>
                             onDrop1Change(denom, normalizeRawInput(e.target.value))
                           }
+                          onKeyDown={inputBindings.drop1[denom].onKeyDown}
                           inputMode="numeric"
                           style={{ minWidth: 80 }}
                         />
@@ -372,11 +488,13 @@ const ShiftSection = ({
                     {BILL_DENOMS.map((denom) => (
                       <td key={`drop2-${denom}`}>
                         <input
+                          ref={inputBindings.drop2[denom].inputRef}
                           className="form-control"
                           value={formatIntegerInput(drop2Values[denom])}
                           onChange={(e) =>
                             onDrop2Change(denom, normalizeRawInput(e.target.value))
                           }
+                          onKeyDown={inputBindings.drop2[denom].onKeyDown}
                           inputMode="numeric"
                           style={{ minWidth: 80 }}
                         />
@@ -397,6 +515,8 @@ const ShiftSection = ({
                 onRawChange={onCoin1Change}
                 placeholder="Optional"
                 decimal={false}
+                inputRef={inputBindings.coin1.inputRef}
+                onKeyDown={inputBindings.coin1.onKeyDown}
               />
             </div>
             <div className="col-12 col-md-4">
@@ -406,6 +526,8 @@ const ShiftSection = ({
                 onRawChange={onCoin2Change}
                 placeholder="Optional"
                 decimal={false}
+                inputRef={inputBindings.coin2.inputRef}
+                onKeyDown={inputBindings.coin2.onKeyDown}
               />
             </div>
             <div className="col-12 col-md-4">
@@ -415,6 +537,8 @@ const ShiftSection = ({
                 onRawChange={onCoin3Change}
                 placeholder="Optional"
                 decimal={false}
+                inputRef={inputBindings.coin3.inputRef}
+                onKeyDown={inputBindings.coin3.onKeyDown}
               />
             </div>
 
@@ -425,6 +549,8 @@ const ShiftSection = ({
                 onRawChange={onUsDropChange}
                 placeholder="Optional"
                 decimal
+                inputRef={inputBindings.usDrop.inputRef}
+                onKeyDown={inputBindings.usDrop.onKeyDown}
               />
             </div>
             <div className="col-12 col-md-4">
@@ -606,47 +732,167 @@ const CashDropsPage = ({ date, onStatusChange }: Props) => {
   const [cashComment2Input, setCashComment2Input] = useState("");
   const [cashComment3Input, setCashComment3Input] = useState("");
 
- useEffect(() => {
-  setCashMorningOtherInput(entry.cashMorningOther?.toString() ?? "");
-  setCashMorningEndingTrayInput(entry.cashMorningEndingTray?.toString() ?? "");
-  setCashMorningCanadianCashInput(entry.cashMorningCanadianCash?.toString() ?? "");
-  setCashMorningDrop1_5Input(entry.cashMorningDrop1_5?.toString() ?? "");
-  setCashMorningDrop1_10Input(entry.cashMorningDrop1_10?.toString() ?? "");
-  setCashMorningDrop1_20Input(entry.cashMorningDrop1_20?.toString() ?? "");
-  setCashMorningDrop1_50Input(entry.cashMorningDrop1_50?.toString() ?? "");
-  setCashMorningDrop1_100Input(entry.cashMorningDrop1_100?.toString() ?? "");
-  setCashMorningDrop2_5Input(entry.cashMorningDrop2_5?.toString() ?? "");
-  setCashMorningDrop2_10Input(entry.cashMorningDrop2_10?.toString() ?? "");
-  setCashMorningDrop2_20Input(entry.cashMorningDrop2_20?.toString() ?? "");
-  setCashMorningDrop2_50Input(entry.cashMorningDrop2_50?.toString() ?? "");
-  setCashMorningDrop2_100Input(entry.cashMorningDrop2_100?.toString() ?? "");
-  setCashMorningCoinsDrop1Input(entry.cashMorningCoinsDrop1?.toString() ?? "");
-  setCashMorningCoinsDrop2Input(entry.cashMorningCoinsDrop2?.toString() ?? "");
-  setCashMorningCoinsDrop3Input(entry.cashMorningCoinsDrop3?.toString() ?? "");
-  setCashMorningUsDropInput(entry.cashMorningUsDrop?.toString() ?? "");
+  useEffect(() => {
+    setCashMorningOtherInput(entry.cashMorningOther?.toString() ?? "");
+    setCashMorningEndingTrayInput(entry.cashMorningEndingTray?.toString() ?? "");
+    setCashMorningCanadianCashInput(entry.cashMorningCanadianCash?.toString() ?? "");
+    setCashMorningDrop1_5Input(entry.cashMorningDrop1_5?.toString() ?? "");
+    setCashMorningDrop1_10Input(entry.cashMorningDrop1_10?.toString() ?? "");
+    setCashMorningDrop1_20Input(entry.cashMorningDrop1_20?.toString() ?? "");
+    setCashMorningDrop1_50Input(entry.cashMorningDrop1_50?.toString() ?? "");
+    setCashMorningDrop1_100Input(entry.cashMorningDrop1_100?.toString() ?? "");
+    setCashMorningDrop2_5Input(entry.cashMorningDrop2_5?.toString() ?? "");
+    setCashMorningDrop2_10Input(entry.cashMorningDrop2_10?.toString() ?? "");
+    setCashMorningDrop2_20Input(entry.cashMorningDrop2_20?.toString() ?? "");
+    setCashMorningDrop2_50Input(entry.cashMorningDrop2_50?.toString() ?? "");
+    setCashMorningDrop2_100Input(entry.cashMorningDrop2_100?.toString() ?? "");
+    setCashMorningCoinsDrop1Input(entry.cashMorningCoinsDrop1?.toString() ?? "");
+    setCashMorningCoinsDrop2Input(entry.cashMorningCoinsDrop2?.toString() ?? "");
+    setCashMorningCoinsDrop3Input(entry.cashMorningCoinsDrop3?.toString() ?? "");
+    setCashMorningUsDropInput(entry.cashMorningUsDrop?.toString() ?? "");
 
-  setCashEveningOtherInput(entry.cashEveningOther?.toString() ?? "");
-  setCashEveningEndingTrayInput(entry.cashEveningEndingTray?.toString() ?? "");
-  setCashEveningCanadianCashInput(entry.cashEveningCanadianCash?.toString() ?? "");
-  setCashEveningDrop1_5Input(entry.cashEveningDrop1_5?.toString() ?? "");
-  setCashEveningDrop1_10Input(entry.cashEveningDrop1_10?.toString() ?? "");
-  setCashEveningDrop1_20Input(entry.cashEveningDrop1_20?.toString() ?? "");
-  setCashEveningDrop1_50Input(entry.cashEveningDrop1_50?.toString() ?? "");
-  setCashEveningDrop1_100Input(entry.cashEveningDrop1_100?.toString() ?? "");
-  setCashEveningDrop2_5Input(entry.cashEveningDrop2_5?.toString() ?? "");
-  setCashEveningDrop2_10Input(entry.cashEveningDrop2_10?.toString() ?? "");
-  setCashEveningDrop2_20Input(entry.cashEveningDrop2_20?.toString() ?? "");
-  setCashEveningDrop2_50Input(entry.cashEveningDrop2_50?.toString() ?? "");
-  setCashEveningDrop2_100Input(entry.cashEveningDrop2_100?.toString() ?? "");
-  setCashEveningCoinsDrop1Input(entry.cashEveningCoinsDrop1?.toString() ?? "");
-  setCashEveningCoinsDrop2Input(entry.cashEveningCoinsDrop2?.toString() ?? "");
-  setCashEveningCoinsDrop3Input(entry.cashEveningCoinsDrop3?.toString() ?? "");
-  setCashEveningUsDropInput(entry.cashEveningUsDrop?.toString() ?? "");
+    setCashEveningOtherInput(entry.cashEveningOther?.toString() ?? "");
+    setCashEveningEndingTrayInput(entry.cashEveningEndingTray?.toString() ?? "");
+    setCashEveningCanadianCashInput(entry.cashEveningCanadianCash?.toString() ?? "");
+    setCashEveningDrop1_5Input(entry.cashEveningDrop1_5?.toString() ?? "");
+    setCashEveningDrop1_10Input(entry.cashEveningDrop1_10?.toString() ?? "");
+    setCashEveningDrop1_20Input(entry.cashEveningDrop1_20?.toString() ?? "");
+    setCashEveningDrop1_50Input(entry.cashEveningDrop1_50?.toString() ?? "");
+    setCashEveningDrop1_100Input(entry.cashEveningDrop1_100?.toString() ?? "");
+    setCashEveningDrop2_5Input(entry.cashEveningDrop2_5?.toString() ?? "");
+    setCashEveningDrop2_10Input(entry.cashEveningDrop2_10?.toString() ?? "");
+    setCashEveningDrop2_20Input(entry.cashEveningDrop2_20?.toString() ?? "");
+    setCashEveningDrop2_50Input(entry.cashEveningDrop2_50?.toString() ?? "");
+    setCashEveningDrop2_100Input(entry.cashEveningDrop2_100?.toString() ?? "");
+    setCashEveningCoinsDrop1Input(entry.cashEveningCoinsDrop1?.toString() ?? "");
+    setCashEveningCoinsDrop2Input(entry.cashEveningCoinsDrop2?.toString() ?? "");
+    setCashEveningCoinsDrop3Input(entry.cashEveningCoinsDrop3?.toString() ?? "");
+    setCashEveningUsDropInput(entry.cashEveningUsDrop?.toString() ?? "");
 
-  setCashComment1Input(entry.cashComment1 ?? "");
-  setCashComment2Input(entry.cashComment2 ?? "");
-  setCashComment3Input(entry.cashComment3 ?? "");
-}, [date]);
+    setCashComment1Input(entry.cashComment1 ?? "");
+    setCashComment2Input(entry.cashComment2 ?? "");
+    setCashComment3Input(entry.cashComment3 ?? "");
+  }, [date]);
+
+  const inputRefs = useRef<Record<FieldKey, FocusableElement | null>>({
+    morningOther: null,
+    morningEndingTray: null,
+    morningCanadianCash: null,
+    morningDrop1_5: null,
+    morningDrop1_10: null,
+    morningDrop1_20: null,
+    morningDrop1_50: null,
+    morningDrop1_100: null,
+    morningDrop2_5: null,
+    morningDrop2_10: null,
+    morningDrop2_20: null,
+    morningDrop2_50: null,
+    morningDrop2_100: null,
+    morningCoins1: null,
+    morningCoins2: null,
+    morningCoins3: null,
+    morningUsDrop: null,
+    eveningOther: null,
+    eveningEndingTray: null,
+    eveningCanadianCash: null,
+    eveningDrop1_5: null,
+    eveningDrop1_10: null,
+    eveningDrop1_20: null,
+    eveningDrop1_50: null,
+    eveningDrop1_100: null,
+    eveningDrop2_5: null,
+    eveningDrop2_10: null,
+    eveningDrop2_20: null,
+    eveningDrop2_50: null,
+    eveningDrop2_100: null,
+    eveningCoins1: null,
+    eveningCoins2: null,
+    eveningCoins3: null,
+    eveningUsDrop: null,
+    comment1: null,
+    comment2: null,
+    comment3: null,
+  });
+
+  const focusNext = (key: FieldKey) => {
+    const currentIndex = inputOrder.indexOf(key);
+    if (currentIndex === -1) return;
+
+    const nextKey = inputOrder[currentIndex + 1];
+    if (!nextKey) return;
+
+    const nextRef = inputRefs.current[nextKey];
+    if (nextRef) {
+      nextRef.focus();
+      if ("select" in nextRef && typeof nextRef.select === "function") {
+        nextRef.select();
+      }
+    }
+  };
+
+  const handleEnter =
+    (key: FieldKey) =>
+    (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        focusNext(key);
+      }
+    };
+
+  const bindInput = (key: FieldKey): InputBinding => ({
+    inputRef: (node) => {
+      inputRefs.current[key] = node;
+    },
+    onKeyDown: handleEnter(key) as (e: React.KeyboardEvent<HTMLInputElement>) => void,
+  });
+
+  const morningBindings: ShiftInputBindings = {
+    other: bindInput("morningOther"),
+    endingTray: bindInput("morningEndingTray"),
+    canadianCash: bindInput("morningCanadianCash"),
+    drop1: {
+      5: bindInput("morningDrop1_5"),
+      10: bindInput("morningDrop1_10"),
+      20: bindInput("morningDrop1_20"),
+      50: bindInput("morningDrop1_50"),
+      100: bindInput("morningDrop1_100"),
+    },
+    drop2: {
+      5: bindInput("morningDrop2_5"),
+      10: bindInput("morningDrop2_10"),
+      20: bindInput("morningDrop2_20"),
+      50: bindInput("morningDrop2_50"),
+      100: bindInput("morningDrop2_100"),
+    },
+    coin1: bindInput("morningCoins1"),
+    coin2: bindInput("morningCoins2"),
+    coin3: bindInput("morningCoins3"),
+    usDrop: bindInput("morningUsDrop"),
+  };
+
+  const eveningBindings: ShiftInputBindings = {
+    other: bindInput("eveningOther"),
+    endingTray: bindInput("eveningEndingTray"),
+    canadianCash: bindInput("eveningCanadianCash"),
+    drop1: {
+      5: bindInput("eveningDrop1_5"),
+      10: bindInput("eveningDrop1_10"),
+      20: bindInput("eveningDrop1_20"),
+      50: bindInput("eveningDrop1_50"),
+      100: bindInput("eveningDrop1_100"),
+    },
+    drop2: {
+      5: bindInput("eveningDrop2_5"),
+      10: bindInput("eveningDrop2_10"),
+      20: bindInput("eveningDrop2_20"),
+      50: bindInput("eveningDrop2_50"),
+      100: bindInput("eveningDrop2_100"),
+    },
+    coin1: bindInput("eveningCoins1"),
+    coin2: bindInput("eveningCoins2"),
+    coin3: bindInput("eveningCoins3"),
+    usDrop: bindInput("eveningUsDrop"),
+  };
 
   return (
     <div className="card border-0" style={cardShellStyle}>
@@ -776,6 +1022,7 @@ const CashDropsPage = ({ date, onStatusChange }: Props) => {
             safeDropCoins={morningSafeDropCoins}
             balance={morningBalance}
             overShort={morningOverShort}
+            inputBindings={morningBindings}
           />
         </div>
 
@@ -888,6 +1135,7 @@ const CashDropsPage = ({ date, onStatusChange }: Props) => {
             safeDropCoins={eveningSafeDropCoins}
             balance={eveningBalance}
             overShort={eveningOverShort}
+            inputBindings={eveningBindings}
           />
         </div>
 
@@ -966,6 +1214,9 @@ const CashDropsPage = ({ date, onStatusChange }: Props) => {
             <div className="col-12">
               <label className="form-label fw-semibold mb-2">Comment 1</label>
               <textarea
+                ref={(node) => {
+                  inputRefs.current.comment1 = node;
+                }}
                 className="form-control"
                 rows={3}
                 value={cashComment1Input}
@@ -974,6 +1225,7 @@ const CashDropsPage = ({ date, onStatusChange }: Props) => {
                   setCashComment1Input(value);
                   setCashComment1(date, value || null);
                 }}
+                onKeyDown={handleEnter("comment1")}
                 style={{ borderRadius: 10 }}
               />
             </div>
@@ -981,6 +1233,9 @@ const CashDropsPage = ({ date, onStatusChange }: Props) => {
             <div className="col-12">
               <label className="form-label fw-semibold mb-2">Comment 2</label>
               <textarea
+                ref={(node) => {
+                  inputRefs.current.comment2 = node;
+                }}
                 className="form-control"
                 rows={3}
                 value={cashComment2Input}
@@ -989,6 +1244,7 @@ const CashDropsPage = ({ date, onStatusChange }: Props) => {
                   setCashComment2Input(value);
                   setCashComment2(date, value || null);
                 }}
+                onKeyDown={handleEnter("comment2")}
                 style={{ borderRadius: 10 }}
               />
             </div>
@@ -996,6 +1252,9 @@ const CashDropsPage = ({ date, onStatusChange }: Props) => {
             <div className="col-12">
               <label className="form-label fw-semibold mb-2">Comment 3</label>
               <textarea
+                ref={(node) => {
+                  inputRefs.current.comment3 = node;
+                }}
                 className="form-control"
                 rows={3}
                 value={cashComment3Input}
@@ -1004,6 +1263,7 @@ const CashDropsPage = ({ date, onStatusChange }: Props) => {
                   setCashComment3Input(value);
                   setCashComment3(date, value || null);
                 }}
+                onKeyDown={handleEnter("comment3")}
                 style={{ borderRadius: 10 }}
               />
             </div>
