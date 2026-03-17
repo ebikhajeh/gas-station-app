@@ -1,6 +1,10 @@
 import { create } from "zustand";
 import { storage } from "../persist/storage";
 import { STORAGE_KEYS } from "../persist/storageKeys";
+import {
+  addDaysToDateInput,
+  getTodayLocalDateInput,
+} from "../../utils/date";
 
 export type TabKey =
   | "endOfDay"
@@ -25,10 +29,8 @@ type UiState = {
 
 type PersistedUiState = Pick<UiState, "selectedDate" | "activeTab">;
 
-const formatDateInput = (d: Date) => d.toISOString().slice(0, 10);
-
 const loadInitialUiState = (): PersistedUiState => {
-  const today = formatDateInput(new Date());
+  const today = getTodayLocalDateInput();
 
   const saved = storage.get<Partial<PersistedUiState>>(STORAGE_KEYS.UI_STATE);
 
@@ -66,25 +68,19 @@ export const useUiStore = create<UiState>((set, get) => {
     },
 
     goToToday: () => {
-      const today = formatDateInput(new Date());
+      const today = getTodayLocalDateInput();
       set({ selectedDate: today });
       persist({ selectedDate: today });
     },
 
     goToPrevDay: () => {
-      const current = new Date(`${get().selectedDate}T12:00:00`);
-      current.setDate(current.getDate() - 1);
-      const next = formatDateInput(current);
-
+      const next = addDaysToDateInput(get().selectedDate, -1);
       set({ selectedDate: next });
       persist({ selectedDate: next });
     },
 
     goToNextDay: () => {
-      const current = new Date(`${get().selectedDate}T12:00:00`);
-      current.setDate(current.getDate() + 1);
-      const next = formatDateInput(current);
-
+      const next = addDaysToDateInput(get().selectedDate, 1);
       set({ selectedDate: next });
       persist({ selectedDate: next });
     },

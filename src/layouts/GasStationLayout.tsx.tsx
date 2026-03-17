@@ -9,6 +9,10 @@ import { computeCashStatus } from "../features/cash/selectors/cash.selectors";
 import { computeLottoStatus } from "../features/lotto/selectors/lotto.selectors";
 import { computeCigarettesStatus } from "../features/cigarettes/selectors/cigarettes.selectors";
 import { useEndOfDayStatus } from "../features/summary/hooks/useEndOfDayStatus";
+import {
+  addDaysToDateInput,
+  getTodayLocalDateInput,
+} from "../utils/date";
 
 type Props = {
   endOfDay: ReactNode;
@@ -19,8 +23,6 @@ type Props = {
   lotto: ReactNode;
   cigarettes: ReactNode;
 };
-
-const formatDateInput = (d: Date) => d.toISOString().slice(0, 10);
 
 const GasStationLayout = ({
   endOfDay,
@@ -70,9 +72,7 @@ const GasStationLayout = ({
   }, [entry, selectedDate]);
 
   const goDay = (delta: number) => {
-    const d = new Date(selectedDate + "T00:00:00");
-    d.setDate(d.getDate() + delta);
-    setSelectedDate(formatDateInput(d));
+    setSelectedDate(addDaysToDateInput(selectedDate, delta));
   };
 
   const syncText =
@@ -136,7 +136,7 @@ const GasStationLayout = ({
                   </button>
                   <button
                     className="btn btn-outline-secondary"
-                    onClick={() => setSelectedDate(formatDateInput(new Date()))}
+                    onClick={() => setSelectedDate(getTodayLocalDateInput())}
                     type="button"
                   >
                     Today
@@ -154,20 +154,20 @@ const GasStationLayout = ({
           </div>
 
           <ul className="nav nav-tabs mt-4">
-              <TabButton
+            <TabButton
               label="Cash & Drops"
               active={activeTab === "cash"}
               onClick={() => setActiveTab("cash")}
               badge={cashBadgeStatus}
             />
-            
+
             <TabButton
               label="Cigarettes"
               active={activeTab === "cigarettes"}
               onClick={() => setActiveTab("cigarettes")}
               badge={cigarettesBadgeStatus}
             />
-          
+
             <TabButton
               label="Prepaid"
               active={activeTab === "prepaid"}
@@ -219,38 +219,37 @@ const GasStationLayout = ({
   );
 };
 
-export default GasStationLayout;
-
-const TabButton = ({
-  label,
-  active,
-  onClick,
-  badge,
-}: {
+type TabButtonProps = {
   label: string;
   active: boolean;
   onClick: () => void;
-  badge?: "missing" | "ok" | "check";
-}) => {
-  const badgeView =
-    badge === "ok" ? (
-      <span className="badge text-bg-success ms-2">OK</span>
-    ) : badge === "check" ? (
-      <span className="badge text-bg-danger ms-2">CHECK</span>
-    ) : badge === "missing" ? (
-      <span className="badge text-bg-secondary ms-2">MISSING</span>
-    ) : null;
+  badge: "missing" | "check" | "ok";
+};
+
+const TabButton = ({ label, active, onClick, badge }: TabButtonProps) => {
+  const badgeClass =
+    badge === "ok"
+      ? "bg-success"
+      : badge === "check"
+        ? "bg-warning text-dark"
+        : "bg-secondary";
 
   return (
     <li className="nav-item">
       <button
-        className={`nav-link ${active ? "active fw-semibold" : ""}`}
         type="button"
+        className={`nav-link d-flex align-items-center gap-2 ${
+          active ? "active" : ""
+        }`}
         onClick={onClick}
       >
-        {label}
-        {badgeView}
+        <span>{label}</span>
+        <span className={`badge rounded-pill ${badgeClass}`}>
+          {badge === "ok" ? "OK" : badge === "check" ? "CHECK" : "MISSING"}
+        </span>
       </button>
     </li>
   );
 };
+
+export default GasStationLayout;

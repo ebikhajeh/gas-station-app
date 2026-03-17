@@ -20,6 +20,7 @@ import {
   computeCashStatus,
   computeCashTotalForDay,
 } from "../selectors/cash.selectors";
+import { getPrevDateInput } from "../../../utils/date";
 
 type Status = "missing" | "check" | "ok";
 type SyncStatus = "idle" | "saving" | "saved" | "error";
@@ -241,12 +242,6 @@ const totalSectionStyle: React.CSSProperties = {
 const commentsSectionStyle: React.CSSProperties = {
   ...cardShellStyle,
   background: "#f28888",
-};
-
-const getPrevDate = (date: string) => {
-  const d = new Date(`${date}T12:00:00`);
-  d.setDate(d.getDate() - 1);
-  return d.toISOString().slice(0, 10);
 };
 
 type NumberInputProps = {
@@ -650,7 +645,7 @@ const CashDropsPage = ({ date, onStatusChange }: Props) => {
   const setCashComment3 = useDailyStore((s) => s.setCashComment3);
 
   const entry = useMemo(() => byDate[date] ?? makeEmptyDailyEntry(), [byDate, date]);
-  const prevDate = useMemo(() => getPrevDate(date), [date]);
+  const prevDate = useMemo(() => getPrevDateInput(date), [date]);
   const prevEntry = useMemo(() => byDate[prevDate] ?? makeEmptyDailyEntry(), [byDate, prevDate]);
 
   const sync = getSyncStatus(date);

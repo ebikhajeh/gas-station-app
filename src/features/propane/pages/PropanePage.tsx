@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDailyStore } from "../../../store/daily/daily.store";
 import { computePropaneCheck, computePropaneStatus } from "../selectors/propane.selectors";
+import { getPrevDateInput } from "../../../utils/date";
 
 type Props = {
   date: string;
@@ -22,12 +23,6 @@ const inputOrder: FieldKey[] = [
   "totalDelivery",
   "totalClosing",
 ];
-
-const prevDateStr = (date: string) => {
-  const d = new Date(date + "T00:00:00");
-  d.setDate(d.getDate() - 1);
-  return d.toISOString().slice(0, 10);
-};
 
 const isDigitsOnly = (s: string) => /^\d*$/.test(s);
 
@@ -71,8 +66,8 @@ const PropanePage = ({ date }: Props) => {
     return byDate[date] ?? emptyPropaneEntry;
   }, [byDate, date]);
 
-  const prevEntry = useMemo(() => {
-    return byDate[prevDateStr(date)] ?? emptyPropaneEntry;
+   const prevEntry = useMemo(() => {
+    return byDate[getPrevDateInput(date)] ?? emptyPropaneEntry;
   }, [byDate, date]);
 
   const [fillOpeningStr, setFillOpeningStr] = useState("");
