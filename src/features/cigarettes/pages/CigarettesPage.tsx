@@ -82,6 +82,22 @@ const sectionTitleStyle: React.CSSProperties = {
   color: "#111827",
 };
 
+const stickyLastColumnStyle: React.CSSProperties = {
+  position: "sticky",
+  right: 0,
+  background: "#ffffff",
+  zIndex: 2,
+  minWidth: 120,
+};
+
+const stickyLastHeaderStyle: React.CSSProperties = {
+  position: "sticky",
+  right: 0,
+  background: "#f8f9fa",
+  zIndex: 3,
+  minWidth: 120,
+};
+
 const getActiveList = (date: string) => {
   const day = Number(date.slice(-2));
   if (!Number.isFinite(day)) return cigaretteListA;
@@ -281,7 +297,7 @@ const CigarettesPage = ({ date, onStatusChange }: Props) => {
                 </th>
                 <th style={{ minWidth: 120 }}>Items Sold</th>
                 <th style={{ minWidth: 120 }}>Bulk Sale</th>
-                <th style={{ minWidth: 120 }}>Over / Short</th>
+                <th style={stickyLastHeaderStyle}>Over / Short</th>
               </tr>
             </thead>
 
@@ -444,6 +460,7 @@ const CigarettesPage = ({ date, onStatusChange }: Props) => {
                     </td>
 
                     <td
+                      style={stickyLastColumnStyle}
                       className={
                         overShort === 0
                           ? "text-success fw-semibold"
