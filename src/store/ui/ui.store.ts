@@ -13,7 +13,8 @@ export type TabKey =
   | "fuel"
   | "cash"
   | "lotto"
-  | "cigarettes";
+  | "cigarettes"
+  | "reports";
 
 type UiState = {
   selectedDate: string;

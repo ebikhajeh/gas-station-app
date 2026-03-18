@@ -6,6 +6,7 @@ import FuelPage from "../features/fuel/pages/FuelPage";
 import CashDropsPage from "../features/cash/pages/CashDropsPage";
 import LottoPage from "../features/lotto/pages/LottoPage";
 import CigarettesPage from "../features/cigarettes/pages/CigarettesPage";
+import ReportsPage from "../features/reports/pages/ReportsPage";
 import { useUiStore } from "../store/ui/ui.store";
 
 const AppShell = () => {
@@ -19,6 +20,7 @@ const AppShell = () => {
       cash={<CashDropsPage date={selectedDate} />}
       lotto={<LottoPage date={selectedDate} />}
       cigarettes={<CigarettesPage date={selectedDate} />}
+      reports={<ReportsPage />}
       endOfDay={<EndOfDayPage date={selectedDate} />}
     />
   );

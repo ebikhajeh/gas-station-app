@@ -22,6 +22,7 @@ type Props = {
   cash: ReactNode;
   lotto: ReactNode;
   cigarettes: ReactNode;
+  reports: ReactNode;
 };
 
 const GasStationLayout = ({
@@ -32,6 +33,7 @@ const GasStationLayout = ({
   cash,
   lotto,
   cigarettes,
+  reports,
 }: Props) => {
   const selectedDate = useUiStore((s) => s.selectedDate);
   const activeTab = useUiStore((s) => s.activeTab);
@@ -202,6 +204,12 @@ const GasStationLayout = ({
               onClick={() => setActiveTab("endOfDay")}
               badge={endOfDayBadgeStatus}
             />
+
+            <TabButton
+              label="Reports"
+              active={activeTab === "reports"}
+              onClick={() => setActiveTab("reports")}
+            />
           </ul>
         </div>
       </div>
@@ -213,43 +221,45 @@ const GasStationLayout = ({
         {activeTab === "cash" && cash}
         {activeTab === "lotto" && lotto}
         {activeTab === "cigarettes" && cigarettes}
+        {activeTab === "reports" && reports}
         {activeTab === "endOfDay" && endOfDay}
       </div>
     </div>
   );
 };
 
-type TabButtonProps = {
+export default GasStationLayout;
+
+const TabButton = ({
+  label,
+  active,
+  onClick,
+  badge,
+}: {
   label: string;
   active: boolean;
   onClick: () => void;
-  badge: "missing" | "check" | "ok";
-};
-
-const TabButton = ({ label, active, onClick, badge }: TabButtonProps) => {
-  const badgeClass =
-    badge === "ok"
-      ? "bg-success"
-      : badge === "check"
-        ? "bg-warning text-dark"
-        : "bg-secondary";
+  badge?: "missing" | "ok" | "check";
+}) => {
+  const badgeView =
+    badge === "ok" ? (
+      <span className="badge text-bg-success ms-2">OK</span>
+    ) : badge === "check" ? (
+      <span className="badge text-bg-danger ms-2">CHECK</span>
+    ) : badge === "missing" ? (
+      <span className="badge text-bg-secondary ms-2">MISSING</span>
+    ) : null;
 
   return (
     <li className="nav-item">
       <button
         type="button"
-        className={`nav-link d-flex align-items-center gap-2 ${
-          active ? "active" : ""
-        }`}
+        className={`nav-link ${active ? "active" : ""}`}
         onClick={onClick}
       >
-        <span>{label}</span>
-        <span className={`badge rounded-pill ${badgeClass}`}>
-          {badge === "ok" ? "OK" : badge === "check" ? "CHECK" : "MISSING"}
-        </span>
+        {label}
+        {badgeView}
       </button>
     </li>
   );
 };
-
-export default GasStationLayout;
