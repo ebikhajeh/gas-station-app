@@ -2,27 +2,73 @@ import { useState } from "react";
 import ReportHeader from "../components/ReportHeader";
 import CashierPerformanceTable from "../components/CashierPerformanceTable";
 import { useCashierPerformance } from "../hooks/useCashierPerformance";
+import { getTodayLocalDateInput } from "../../../utils/date";
 
-const today = new Date().toISOString().slice(0, 10);
+type ReportType =
+  | ""
+  | "cashierPerformance"
+  | "monthlyOverShort"
+  | "missingDays"
+  | "fuelAnalysis";
+
+const today = getTodayLocalDateInput();
 
 const ReportsPage = () => {
+  const [reportType, setReportType] = useState<ReportType>("");
   const [startDate, setStartDate] = useState(today);
   const [endDate, setEndDate] = useState(today);
 
-  const data = useCashierPerformance(startDate, endDate);
+  const cashierPerformanceData = useCashierPerformance(startDate, endDate);
 
   return (
-    <div className="card p-4 border-0">
-      <h4 className="mb-3">Reports</h4>
+    <div className="card border-0 shadow-sm">
+      <div className="card-body p-4">
+        <div className="mb-4">
+          <h4 className="mb-1">Reports</h4>
+          <div className="text-muted small">
+            Choose a report type, then apply your date range.
+          </div>
+        </div>
 
-      <ReportHeader
-        startDate={startDate}
-        endDate={endDate}
-        onStartChange={setStartDate}
-        onEndChange={setEndDate}
-      />
+        <ReportHeader
+          reportType={reportType}
+          startDate={startDate}
+          endDate={endDate}
+          onReportTypeChange={(value) => setReportType(value)}
+          onStartChange={setStartDate}
+          onEndChange={setEndDate}
+        />
 
-      <CashierPerformanceTable data={data} />
+        {reportType === "" && (
+          <div className="alert alert-light border mt-4 mb-0">
+            Please select a report type to view the report.
+          </div>
+        )}
+
+        {reportType === "cashierPerformance" && (
+          <div className="mt-4">
+            <CashierPerformanceTable data={cashierPerformanceData} />
+          </div>
+        )}
+
+        {reportType === "monthlyOverShort" && (
+          <div className="alert alert-light border mt-4 mb-0">
+            Monthly Over / Short report will be added next.
+          </div>
+        )}
+
+        {reportType === "missingDays" && (
+          <div className="alert alert-light border mt-4 mb-0">
+            Missing Days report will be added next.
+          </div>
+        )}
+
+        {reportType === "fuelAnalysis" && (
+          <div className="alert alert-light border mt-4 mb-0">
+            Fuel Analysis report will be added next.
+          </div>
+        )}
+      </div>
     </div>
   );
 };

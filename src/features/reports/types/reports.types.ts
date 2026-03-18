@@ -8,7 +8,8 @@ export interface CashierDayRecord {
 }
 
 export interface CashierSummary {
-  cashier: string;
+  cashierId: string;
+  cashierLabel: string;
   total: number;
 }
 

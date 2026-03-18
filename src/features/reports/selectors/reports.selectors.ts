@@ -1,15 +1,30 @@
-import type { CashierPerformanceResult } from "../types/reports.types";
+import type { DailyEntry } from "../../../domain/daily/daily.model";
+import {
+  computeCashMorningOverShort,
+  computeCashEveningOverShort,
+} from "../../cash/selectors/cash.selectors";
+import { CASHIER_LIST } from "../../cash/constants/cashierList";
+import type { CashierPerformanceResult, CashierSummary } from "../types/reports.types";
+
+const getCashierLabel = (cashierId: string): string => {
+  const found = CASHIER_LIST.find((item) => item.id === cashierId);
+  return found?.label ?? cashierId;
+};
+
+const sortByLabel = (items: CashierSummary[]): CashierSummary[] => {
+  return [...items].sort((a, b) => a.cashierLabel.localeCompare(b.cashierLabel));
+};
 
 export const buildCashierPerformance = (
-  byDate: Record<string, any>,
+  byDate: Record<string, DailyEntry>,
   startDate: string,
   endDate: string
 ): CashierPerformanceResult => {
   const dates = Object.keys(byDate)
-    .filter((d) => d >= startDate && d <= endDate)
+    .filter((date) => date >= startDate && date <= endDate)
     .sort();
 
-  const days: any[] = [];
+  const days: CashierPerformanceResult["days"] = [];
 
   const morningTotals: Record<string, number> = {};
   const eveningTotals: Record<string, number> = {};
@@ -18,43 +33,48 @@ export const buildCashierPerformance = (
     const entry = byDate[date];
     if (!entry) return;
 
-    const morningCashier = entry.cashierMorning ?? null;
-    const eveningCashier = entry.cashierEvening ?? null;
+    const cashierMorning = entry.cashMorningCashierName ?? null;
+    const cashierEvening = entry.cashEveningCashierName ?? null;
 
-    const morningValue = entry.totalMorningOverShort ?? 0;
-    const eveningValue = entry.totalEveningOverShort ?? 0;
-
+    const morningValue = computeCashMorningOverShort(entry);
+    const eveningValue = computeCashEveningOverShort(entry);
     const total = morningValue + eveningValue;
 
-    if (morningCashier) {
-      morningTotals[morningCashier] =
-        (morningTotals[morningCashier] ?? 0) + morningValue;
+    if (cashierMorning) {
+      morningTotals[cashierMorning] =
+        (morningTotals[cashierMorning] ?? 0) + morningValue;
     }
 
-    if (eveningCashier) {
-      eveningTotals[eveningCashier] =
-        (eveningTotals[eveningCashier] ?? 0) + eveningValue;
+    if (cashierEvening) {
+      eveningTotals[cashierEvening] =
+        (eveningTotals[cashierEvening] ?? 0) + eveningValue;
     }
 
     days.push({
       date,
-      cashierMorning: morningCashier,
-      cashierEvening: eveningCashier,
+      cashierMorning: cashierMorning ? getCashierLabel(cashierMorning) : null,
+      cashierEvening: cashierEvening ? getCashierLabel(cashierEvening) : null,
       morningValue,
       eveningValue,
       total,
     });
   });
 
-  const summaryMorning = Object.entries(morningTotals).map(([cashier, total]) => ({
-    cashier,
-    total,
-  }));
+  const summaryMorning = sortByLabel(
+    Object.entries(morningTotals).map(([cashierId, total]) => ({
+      cashierId,
+      cashierLabel: getCashierLabel(cashierId),
+      total,
+    }))
+  );
 
-  const summaryEvening = Object.entries(eveningTotals).map(([cashier, total]) => ({
-    cashier,
-    total,
-  }));
+  const summaryEvening = sortByLabel(
+    Object.entries(eveningTotals).map(([cashierId, total]) => ({
+      cashierId,
+      cashierLabel: getCashierLabel(cashierId),
+      total,
+    }))
+  );
 
   return {
     days,
