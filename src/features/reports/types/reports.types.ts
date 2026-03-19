@@ -53,3 +53,52 @@ export interface CigarettesReportResult {
   days: CigarettesDayRecord[];
   totals: CigarettesReportTotals;
 }
+
+export interface BclcDayRecord {
+  date: string;
+
+  salesOnDemand: number;
+  salesSwActivation: number;
+  salesFtOnDemand: number;
+  salesFtSw: number;
+  discounts: number;
+
+  printedCancellation: number;
+  scratchCancellation: number;
+
+  valCashOnDemand: number;
+  valCashSw: number;
+  valFtOnDemand: number;
+  valFtSw: number;
+  valVouchers: number;
+
+  overShortSalesOnDemand: number | null;
+  overShortSw: number | null;
+  overShortPayout: number | null;
+}
+
+export interface BclcReportTotals {
+  salesOnDemand: number;
+  salesSwActivation: number;
+  salesFtOnDemand: number;
+  salesFtSw: number;
+  discounts: number;
+
+  printedCancellation: number;
+  scratchCancellation: number;
+
+  valCashOnDemand: number;
+  valCashSw: number;
+  valFtOnDemand: number;
+  valFtSw: number;
+  valVouchers: number;
+
+  overShortSalesOnDemand: number;
+  overShortSw: number;
+  overShortPayout: number;
+}
+
+export interface BclcReportResult {
+  days: BclcDayRecord[];
+  totals: BclcReportTotals;
+}

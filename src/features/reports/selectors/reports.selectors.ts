@@ -20,7 +20,10 @@ import type {
   CashierSummary,
   LottoSummary,
   CigarettesReportResult,
+  BclcReportResult,
 } from "../types/reports.types";
+
+const n = (value: number | null | undefined): number => value ?? 0;
 
 const getCashierLabel = (cashierId: string): string => {
   const found = CASHIER_LIST.find((item) => item.id === cashierId);
@@ -224,6 +227,120 @@ export const buildCigarettesReport = (
       sale: totalSale,
       bulk: totalBulk,
       difference: totalDifference,
+    },
+  };
+};
+
+export const buildBclcReport = (
+  byDate: Record<string, DailyEntry>,
+  startDate: string,
+  endDate: string
+): BclcReportResult => {
+  const dates = Object.keys(byDate)
+    .filter((date) => date >= startDate && date <= endDate)
+    .sort();
+
+  const days: BclcReportResult["days"] = [];
+
+  let totalSalesOnDemand = 0;
+  let totalSalesSwActivation = 0;
+  let totalSalesFtOnDemand = 0;
+  let totalSalesFtSw = 0;
+  let totalDiscounts = 0;
+
+  let totalPrintedCancellation = 0;
+  let totalScratchCancellation = 0;
+
+  let totalValCashOnDemand = 0;
+  let totalValCashSw = 0;
+  let totalValFtOnDemand = 0;
+  let totalValFtSw = 0;
+  let totalValVouchers = 0;
+
+  let totalOverShortSalesOnDemand = 0;
+  let totalOverShortSw = 0;
+  let totalOverShortPayout = 0;
+
+  dates.forEach((date) => {
+    const entry = byDate[date];
+    if (!entry) return;
+
+    const salesOnDemand = n(entry.lottoPrintedTotalOnDemand);
+    const salesSwActivation = n(entry.lottoScratchTotalSwActivation);
+    const salesFtOnDemand = n(entry.lottoPrintedTotalFtOnDemand);
+    const salesFtSw = n(entry.lottoScratchTotalFtSw);
+    const discounts = n(entry.lottoPrintedTotalDiscounts);
+
+    const printedCancellation = n(entry.lottoPrintedTotalCancellation);
+    const scratchCancellation = n(entry.lottoScratchTotalCancellation);
+
+    const valCashOnDemand = n(entry.lottoValidationTotalCashOnDemand);
+    const valCashSw = n(entry.lottoValidationTotalCashSw);
+    const valFtOnDemand = n(entry.lottoValidationTotalFtOnDemand);
+    const valFtSw = n(entry.lottoValidationTotalFtSw);
+    const valVouchers = n(entry.lottoValidationTotalVouchers);
+
+    const overShortSalesOnDemand = computePrintedOverShort(entry);
+    const overShortSw = computeScratchOverShort(entry);
+    const overShortPayout = computeValidationOverShort(entry);
+
+    totalSalesOnDemand += salesOnDemand;
+    totalSalesSwActivation += salesSwActivation;
+    totalSalesFtOnDemand += salesFtOnDemand;
+    totalSalesFtSw += salesFtSw;
+    totalDiscounts += discounts;
+
+    totalPrintedCancellation += printedCancellation;
+    totalScratchCancellation += scratchCancellation;
+
+    totalValCashOnDemand += valCashOnDemand;
+    totalValCashSw += valCashSw;
+    totalValFtOnDemand += valFtOnDemand;
+    totalValFtSw += valFtSw;
+    totalValVouchers += valVouchers;
+
+    totalOverShortSalesOnDemand += overShortSalesOnDemand ?? 0;
+    totalOverShortSw += overShortSw ?? 0;
+    totalOverShortPayout += overShortPayout ?? 0;
+
+    days.push({
+      date,
+      salesOnDemand,
+      salesSwActivation,
+      salesFtOnDemand,
+      salesFtSw,
+      discounts,
+      printedCancellation,
+      scratchCancellation,
+      valCashOnDemand,
+      valCashSw,
+      valFtOnDemand,
+      valFtSw,
+      valVouchers,
+      overShortSalesOnDemand,
+      overShortSw,
+      overShortPayout,
+    });
+  });
+
+  return {
+    days,
+    totals: {
+      salesOnDemand: totalSalesOnDemand,
+      salesSwActivation: totalSalesSwActivation,
+      salesFtOnDemand: totalSalesFtOnDemand,
+      salesFtSw: totalSalesFtSw,
+      discounts: totalDiscounts,
+      printedCancellation: totalPrintedCancellation,
+      scratchCancellation: totalScratchCancellation,
+      valCashOnDemand: totalValCashOnDemand,
+      valCashSw: totalValCashSw,
+      valFtOnDemand: totalValFtOnDemand,
+      valFtSw: totalValFtSw,
+      valVouchers: totalValVouchers,
+      overShortSalesOnDemand: totalOverShortSalesOnDemand,
+      overShortSw: totalOverShortSw,
+      overShortPayout: totalOverShortPayout,
     },
   };
 };

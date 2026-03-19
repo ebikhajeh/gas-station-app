@@ -3,13 +3,16 @@ import { getTodayLocalDateInput } from "../../../utils/date";
 import ReportHeader from "../components/ReportHeader";
 import CashierPerformanceTable from "../components/CashierPerformanceTable";
 import CigarettesReportTable from "../components/CigarettesReportTable";
+import BclcReportTable from "../components/BclcReportTable";
 import { useCashierPerformance } from "../hooks/useCashierPerformance";
 import { useCigarettesReport } from "../hooks/useCigarettesReport";
+import { useBclcReport } from "../hooks/useBclcReport";
 
 type ReportType =
   | ""
   | "cashierPerformance"
   | "cigarettesReport"
+  | "bclc"
   | "monthlyOverShort"
   | "missingDays"
   | "fuelAnalysis";
@@ -23,6 +26,7 @@ const ReportsPage = () => {
 
   const cashierPerformanceData = useCashierPerformance(startDate, endDate);
   const cigarettesReportData = useCigarettesReport(startDate, endDate);
+  const bclcReportData = useBclcReport(startDate, endDate);
 
   return (
     <div className="card border-0 shadow-sm">
@@ -58,6 +62,12 @@ const ReportsPage = () => {
         {reportType === "cigarettesReport" && (
           <div className="mt-4">
             <CigarettesReportTable data={cigarettesReportData} />
+          </div>
+        )}
+
+        {reportType === "bclc" && (
+          <div className="mt-4">
+            <BclcReportTable data={bclcReportData} />
           </div>
         )}
 
