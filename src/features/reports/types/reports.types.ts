@@ -27,8 +27,29 @@ export interface CashierPerformanceResult {
   days: CashierDayRecord[];
   summaryMorning: CashierSummary[];
   summaryEvening: CashierSummary[];
-
   lottoPrintedSummary: LottoSummary[];
   lottoScratchSummary: LottoSummary[];
   lottoValidationSummary: LottoSummary[];
+}
+
+export interface CigarettesDayRecord {
+  date: string;
+  opening: number;
+  closing: number;
+  sale: number;
+  bulk: number;
+  difference: number;
+}
+
+export interface CigarettesReportTotals {
+  opening: number;
+  closing: number;
+  sale: number;
+  bulk: number;
+  difference: number;
+}
+
+export interface CigarettesReportResult {
+  days: CigarettesDayRecord[];
+  totals: CigarettesReportTotals;
 }

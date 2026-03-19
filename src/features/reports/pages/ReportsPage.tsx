@@ -1,12 +1,15 @@
 import { useState } from "react";
+import { getTodayLocalDateInput } from "../../../utils/date";
 import ReportHeader from "../components/ReportHeader";
 import CashierPerformanceTable from "../components/CashierPerformanceTable";
+import CigarettesReportTable from "../components/CigarettesReportTable";
 import { useCashierPerformance } from "../hooks/useCashierPerformance";
-import { getTodayLocalDateInput } from "../../../utils/date";
+import { useCigarettesReport } from "../hooks/useCigarettesReport";
 
 type ReportType =
   | ""
   | "cashierPerformance"
+  | "cigarettesReport"
   | "monthlyOverShort"
   | "missingDays"
   | "fuelAnalysis";
@@ -19,6 +22,7 @@ const ReportsPage = () => {
   const [endDate, setEndDate] = useState(today);
 
   const cashierPerformanceData = useCashierPerformance(startDate, endDate);
+  const cigarettesReportData = useCigarettesReport(startDate, endDate);
 
   return (
     <div className="card border-0 shadow-sm">
@@ -34,7 +38,7 @@ const ReportsPage = () => {
           reportType={reportType}
           startDate={startDate}
           endDate={endDate}
-          onReportTypeChange={(value) => setReportType(value)}
+          onReportTypeChange={setReportType}
           onStartChange={setStartDate}
           onEndChange={setEndDate}
         />
@@ -48,6 +52,12 @@ const ReportsPage = () => {
         {reportType === "cashierPerformance" && (
           <div className="mt-4">
             <CashierPerformanceTable data={cashierPerformanceData} />
+          </div>
+        )}
+
+        {reportType === "cigarettesReport" && (
+          <div className="mt-4">
+            <CigarettesReportTable data={cigarettesReportData} />
           </div>
         )}
 
