@@ -6,9 +6,7 @@ const getColorClass = (value: number) => {
   return "text-dark fw-semibold";
 };
 
-const formatAmount = (value: number | null) => {
-  if (value === null) return "—";
-
+const formatAmount = (value: number) => {
   return new Intl.NumberFormat("en-CA", {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
@@ -26,7 +24,6 @@ const CashierPerformanceTable = ({
 }) => {
   return (
     <div className="d-flex flex-column gap-4">
-      {/* Main Cashier Performance */}
       <div className="card border-0 shadow-sm">
         <div className="card-body p-0">
           <div className="p-3 border-bottom bg-light fw-semibold">
@@ -75,7 +72,6 @@ const CashierPerformanceTable = ({
         </div>
       </div>
 
-      {/* Morning / Evening Summary */}
       <div className="row g-4">
         <div className="col-12 col-xl-6">
           <div className="card border-0 shadow-sm h-100">
@@ -151,73 +147,6 @@ const CashierPerformanceTable = ({
               )}
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Lotto Breakdown */}
-      <div className="card border-0 shadow-sm">
-        <div className="card-body p-0">
-          <div className="p-3 border-bottom bg-light fw-semibold">
-            Lotto Breakdown
-          </div>
-
-          {data.days.length === 0 ? (
-            <div className="p-4">
-              <EmptyState text="No lotto records found for the selected date range." />
-            </div>
-          ) : (
-            <div className="table-responsive">
-              <table className="table table-bordered align-middle mb-0">
-                <thead className="table-light">
-                  <tr>
-                    <th style={{ minWidth: 130 }}>Date</th>
-                    <th style={{ minWidth: 220 }}>Morning Cashier</th>
-                    <th style={{ minWidth: 220 }}>Evening Cashier</th>
-                    <th style={{ minWidth: 120 }}>Printed</th>
-                    <th style={{ minWidth: 120 }}>Scratch</th>
-                    <th style={{ minWidth: 120 }}>Validation</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {data.days.map((row) => (
-                    <tr key={`lotto-${row.date}`}>
-                      <td>{row.date}</td>
-                      <td>{row.cashierMorning ?? "—"}</td>
-                      <td>{row.cashierEvening ?? "—"}</td>
-                      <td
-                        className={
-                          row.lottoPrinted !== null
-                            ? getColorClass(row.lottoPrinted)
-                            : ""
-                        }
-                      >
-                        {formatAmount(row.lottoPrinted)}
-                      </td>
-                      <td
-                        className={
-                          row.lottoScratch !== null
-                            ? getColorClass(row.lottoScratch)
-                            : ""
-                        }
-                      >
-                        {formatAmount(row.lottoScratch)}
-                      </td>
-                      <td
-                        className={
-                          row.lottoValidation !== null
-                            ? getColorClass(row.lottoValidation)
-                            : ""
-                        }
-                      >
-                        {formatAmount(row.lottoValidation)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
         </div>
       </div>
     </div>
