@@ -19,12 +19,17 @@ import {
   computeCigaretteOverShort,
   getCigaretteListForDate,
 } from "../../cigarettes/selectors/cigarettes.selectors";
+import {
+  computeEndAndBeginDiffer,
+  computeEndOfDayCashDrop,
+} from "../../summary/selectors/endOfDay.selectors";
 import type {
   CashierPerformanceResult,
   CashierSummary,
   CigarettesReportResult,
   BclcReportResult,
   CashdropsReportResult,
+  BcpIvReportResult,
 } from "../types/reports.types";
 
 const n = (value: number | null | undefined): number => value ?? 0;
@@ -378,5 +383,104 @@ export const buildCashdropsReport = (
       us: totalUs,
       others: totalOthers,
     },
+  };
+};
+
+export const buildBcpIvReport = (
+  byDate: Record<string, DailyEntry>,
+  startDate: string,
+  endDate: string
+): BcpIvReportResult => {
+  const dates = Object.keys(byDate)
+    .filter((date) => date >= startDate && date <= endDate)
+    .sort();
+
+  const days: BcpIvReportResult["days"] = [];
+
+  const totals: BcpIvReportResult["totals"] = {
+    endOfDayFuelSales: 0,
+    endOfDayEssoGift925: 0,
+    endOfDayPumpTests: 0,
+    endOfDayItemSales: 0,
+    endOfDayWrongShelfPrice: 0,
+    endOfDayDamagedProduct: 0,
+    endOfDayEmployeeDiscount: 0,
+    endOfDayGst: 0,
+    endOfDayGstv: 0,
+    endOfDayPst: 0,
+    endOfDayPstv: 0,
+    endOfDayPennyRounding: 0,
+    endOfDayTotalPos: 0,
+    endOfDayPumpOverRun: 0,
+    endOfDayDeliveryApp: 0,
+    endOfDayRedemptions: 0,
+    endOfDayCigarettes02: 0,
+    endOfDayOtherTobacco03: 0,
+    cashDrops: 0,
+    tillDiffer: 0,
+    bcpIv: 0,
+  };
+
+  dates.forEach((date) => {
+    const entry = byDate[date];
+    if (!entry) return;
+
+    const row = {
+      date,
+      endOfDayFuelSales: n(entry.endOfDayFuelSales),
+      endOfDayEssoGift925: n(entry.endOfDayEssoGift925),
+      endOfDayPumpTests: n(entry.endOfDayPumpTests),
+      endOfDayItemSales: n(entry.endOfDayItemSales),
+      endOfDayWrongShelfPrice: n(entry.endOfDayWrongShelfPrice),
+      endOfDayDamagedProduct: n(entry.endOfDayDamagedProduct),
+      endOfDayEmployeeDiscount: n(entry.endOfDayEmployeeDiscount),
+      endOfDayGst: n(entry.endOfDayGst),
+      endOfDayGstv: n(entry.endOfDayGstv),
+      endOfDayPst: n(entry.endOfDayPst),
+      endOfDayPstv: n(entry.endOfDayPstv),
+      endOfDayPennyRounding: n(entry.endOfDayPennyRounding),
+      endOfDayTotalPos: n(entry.endOfDayTotalPos),
+      endOfDayPumpOverRun: n(entry.endOfDayPumpOverRun),
+      endOfDayDeliveryApp: n(entry.endOfDayDeliveryApp),
+      endOfDayRedemptions: n(entry.endOfDayRedemptions),
+      endOfDayCigarettes02: n(entry.endOfDayCigarettes02),
+      endOfDayOtherTobacco03: n(entry.endOfDayOtherTobacco03),
+      cashDrops: computeEndOfDayCashDrop(entry),
+      tillDiffer: computeEndAndBeginDiffer(entry),
+      bcpIv:
+        n(entry.endOfDayTotalPos) +
+        n(entry.endOfDayRedemptions) -
+        n(entry.endOfDayFuelSales) -
+        n(entry.endOfDayEssoGift925),
+    };
+
+    days.push(row);
+
+    totals.endOfDayFuelSales += row.endOfDayFuelSales;
+    totals.endOfDayEssoGift925 += row.endOfDayEssoGift925;
+    totals.endOfDayPumpTests += row.endOfDayPumpTests;
+    totals.endOfDayItemSales += row.endOfDayItemSales;
+    totals.endOfDayWrongShelfPrice += row.endOfDayWrongShelfPrice;
+    totals.endOfDayDamagedProduct += row.endOfDayDamagedProduct;
+    totals.endOfDayEmployeeDiscount += row.endOfDayEmployeeDiscount;
+    totals.endOfDayGst += row.endOfDayGst;
+    totals.endOfDayGstv += row.endOfDayGstv;
+    totals.endOfDayPst += row.endOfDayPst;
+    totals.endOfDayPstv += row.endOfDayPstv;
+    totals.endOfDayPennyRounding += row.endOfDayPennyRounding;
+    totals.endOfDayTotalPos += row.endOfDayTotalPos;
+    totals.endOfDayPumpOverRun += row.endOfDayPumpOverRun;
+    totals.endOfDayDeliveryApp += row.endOfDayDeliveryApp;
+    totals.endOfDayRedemptions += row.endOfDayRedemptions;
+    totals.endOfDayCigarettes02 += row.endOfDayCigarettes02;
+    totals.endOfDayOtherTobacco03 += row.endOfDayOtherTobacco03;
+    totals.cashDrops += row.cashDrops;
+    totals.tillDiffer += row.tillDiffer;
+    totals.bcpIv += row.bcpIv;
+  });
+
+  return {
+    days,
+    totals,
   };
 };

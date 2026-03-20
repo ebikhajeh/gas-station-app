@@ -4,6 +4,7 @@ type ReportType =
   | "cigarettesReport"
   | "bclc"
   | "cashdrops"
+  | "bcpIv"
   | "monthlyOverShort"
   | "missingDays"
   | "fuelAnalysis";
@@ -36,9 +37,10 @@ const ReportHeader = ({
         >
           <option value="">Select report</option>
           <option value="cashierPerformance">Cashier Performance</option>
-          <option value="cigarettesReport">Cigarettes Report</option>
+          <option value="cigarettesReport">Cigarettes</option>
           <option value="bclc">BCLC</option>
           <option value="cashdrops">Cashdrops</option>
+          <option value="bcpIv">BCP IV</option>
           <option value="monthlyOverShort">Monthly Over / Short</option>
           <option value="missingDays">Missing Days</option>
           <option value="fuelAnalysis">Fuel Analysis</option>

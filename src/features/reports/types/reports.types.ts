@@ -116,3 +116,57 @@ export interface CashdropsReportResult {
   days: CashdropsDayRecord[];
   totals: CashdropsReportTotals;
 }
+
+export interface BcpIvDayRecord {
+  date: string;
+  endOfDayFuelSales: number;
+  endOfDayEssoGift925: number;
+  endOfDayPumpTests: number;
+  endOfDayItemSales: number;
+  endOfDayWrongShelfPrice: number;
+  endOfDayDamagedProduct: number;
+  endOfDayEmployeeDiscount: number;
+  endOfDayGst: number;
+  endOfDayGstv: number;
+  endOfDayPst: number;
+  endOfDayPstv: number;
+  endOfDayPennyRounding: number;
+  endOfDayTotalPos: number;
+  endOfDayPumpOverRun: number;
+  endOfDayDeliveryApp: number;
+  endOfDayRedemptions: number;
+  endOfDayCigarettes02: number;
+  endOfDayOtherTobacco03: number;
+  cashDrops: number;
+  tillDiffer: number;
+  bcpIv: number;
+}
+
+export interface BcpIvReportTotals {
+  endOfDayFuelSales: number;
+  endOfDayEssoGift925: number;
+  endOfDayPumpTests: number;
+  endOfDayItemSales: number;
+  endOfDayWrongShelfPrice: number;
+  endOfDayDamagedProduct: number;
+  endOfDayEmployeeDiscount: number;
+  endOfDayGst: number;
+  endOfDayGstv: number;
+  endOfDayPst: number;
+  endOfDayPstv: number;
+  endOfDayPennyRounding: number;
+  endOfDayTotalPos: number;
+  endOfDayPumpOverRun: number;
+  endOfDayDeliveryApp: number;
+  endOfDayRedemptions: number;
+  endOfDayCigarettes02: number;
+  endOfDayOtherTobacco03: number;
+  cashDrops: number;
+  tillDiffer: number;
+  bcpIv: number;
+}
+
+export interface BcpIvReportResult {
+  days: BcpIvDayRecord[];
+  totals: BcpIvReportTotals;
+}
