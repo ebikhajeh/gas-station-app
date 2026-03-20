@@ -4,15 +4,18 @@ import ReportHeader from "../components/ReportHeader";
 import CashierPerformanceTable from "../components/CashierPerformanceTable";
 import CigarettesReportTable from "../components/CigarettesReportTable";
 import BclcReportTable from "../components/BclcReportTable";
+import CashdropsReportTable from "../components/CashdropsReportTable";
 import { useCashierPerformance } from "../hooks/useCashierPerformance";
 import { useCigarettesReport } from "../hooks/useCigarettesReport";
 import { useBclcReport } from "../hooks/useBclcReport";
+import { useCashdropsReport } from "../hooks/useCashdropsReport";
 
 type ReportType =
   | ""
   | "cashierPerformance"
   | "cigarettesReport"
   | "bclc"
+  | "cashdrops"
   | "monthlyOverShort"
   | "missingDays"
   | "fuelAnalysis";
@@ -27,6 +30,7 @@ const ReportsPage = () => {
   const cashierPerformanceData = useCashierPerformance(startDate, endDate);
   const cigarettesReportData = useCigarettesReport(startDate, endDate);
   const bclcReportData = useBclcReport(startDate, endDate);
+  const cashdropsReportData = useCashdropsReport(startDate, endDate);
 
   return (
     <div className="card border-0 shadow-sm">
@@ -68,6 +72,12 @@ const ReportsPage = () => {
         {reportType === "bclc" && (
           <div className="mt-4">
             <BclcReportTable data={bclcReportData} />
+          </div>
+        )}
+
+        {reportType === "cashdrops" && (
+          <div className="mt-4">
+            <CashdropsReportTable data={cashdropsReportData} />
           </div>
         )}
 

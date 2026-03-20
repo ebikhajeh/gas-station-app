@@ -2,6 +2,10 @@ import type { DailyEntry } from "../../../domain/daily/daily.model";
 import {
   computeCashMorningOverShort,
   computeCashEveningOverShort,
+  computeCashMorningDrop1Total,
+  computeCashMorningDrop2Total,
+  computeCashEveningDrop1Total,
+  computeCashEveningDrop2Total,
 } from "../../cash/selectors/cash.selectors";
 import { CASHIER_LIST } from "../../cash/constants/cashierList";
 import {
@@ -21,6 +25,7 @@ import type {
   LottoSummary,
   CigarettesReportResult,
   BclcReportResult,
+  CashdropsReportResult,
 } from "../types/reports.types";
 
 const n = (value: number | null | undefined): number => value ?? 0;
@@ -341,6 +346,91 @@ export const buildBclcReport = (
       overShortSalesOnDemand: totalOverShortSalesOnDemand,
       overShortSw: totalOverShortSw,
       overShortPayout: totalOverShortPayout,
+    },
+  };
+};
+
+export const buildCashdropsReport = (
+  byDate: Record<string, DailyEntry>,
+  startDate: string,
+  endDate: string
+): CashdropsReportResult => {
+  const dates = Object.keys(byDate)
+    .filter((date) => date >= startDate && date <= endDate)
+    .sort();
+
+  const days: CashdropsReportResult["days"] = [];
+
+  let totalMorningCashdrops = 0;
+  let totalEveningCashdrops = 0;
+  let totalForDayTotal = 0;
+  let totalCoins = 0;
+  let totalUs = 0;
+  let totalOthers = 0;
+
+  dates.forEach((date) => {
+    const entry = byDate[date];
+    if (!entry) return;
+
+    const morningCashdrops =
+      computeCashMorningDrop1Total(entry) + computeCashMorningDrop2Total(entry);
+
+    const eveningCashdrops =
+      computeCashEveningDrop1Total(entry) + computeCashEveningDrop2Total(entry);
+
+    const totalForDay = morningCashdrops + eveningCashdrops;
+
+    const coins =
+      n(entry.cashMorningCoinsDrop1) +
+      n(entry.cashMorningCoinsDrop2) +
+      n(entry.cashMorningCoinsDrop3) +
+      n(entry.cashEveningCoinsDrop1) +
+      n(entry.cashEveningCoinsDrop2) +
+      n(entry.cashEveningCoinsDrop3);
+
+    const us = n(entry.cashMorningUsDrop) + n(entry.cashEveningUsDrop);
+
+    const others = n(entry.cashMorningOther) + n(entry.cashEveningOther);
+
+    const notes = [entry.cashComment1, entry.cashComment2, entry.cashComment3]
+      .map((item) => item?.trim() ?? "")
+      .filter(Boolean)
+      .join(" | ");
+
+    totalMorningCashdrops += morningCashdrops;
+    totalEveningCashdrops += eveningCashdrops;
+    totalForDayTotal += totalForDay;
+    totalCoins += coins;
+    totalUs += us;
+    totalOthers += others;
+
+    days.push({
+      date,
+      cashierMorning: entry.cashMorningCashierName
+        ? getCashierLabel(entry.cashMorningCashierName)
+        : null,
+      cashierEvening: entry.cashEveningCashierName
+        ? getCashierLabel(entry.cashEveningCashierName)
+        : null,
+      morningCashdrops,
+      eveningCashdrops,
+      totalForDay,
+      coins,
+      us,
+      others,
+      note: notes,
+    });
+  });
+
+  return {
+    days,
+    totals: {
+      morningCashdrops: totalMorningCashdrops,
+      eveningCashdrops: totalEveningCashdrops,
+      totalForDay: totalForDayTotal,
+      coins: totalCoins,
+      us: totalUs,
+      others: totalOthers,
     },
   };
 };

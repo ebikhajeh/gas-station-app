@@ -102,3 +102,30 @@ export interface BclcReportResult {
   days: BclcDayRecord[];
   totals: BclcReportTotals;
 }
+
+export interface CashdropsDayRecord {
+  date: string;
+  cashierMorning: string | null;
+  cashierEvening: string | null;
+  morningCashdrops: number;
+  eveningCashdrops: number;
+  totalForDay: number;
+  coins: number;
+  us: number;
+  others: number;
+  note: string;
+}
+
+export interface CashdropsReportTotals {
+  morningCashdrops: number;
+  eveningCashdrops: number;
+  totalForDay: number;
+  coins: number;
+  us: number;
+  others: number;
+}
+
+export interface CashdropsReportResult {
+  days: CashdropsDayRecord[];
+  totals: CashdropsReportTotals;
+}
